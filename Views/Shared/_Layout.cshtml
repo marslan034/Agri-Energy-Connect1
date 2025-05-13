@@ -23,18 +23,6 @@
                             <a class="nav-link" href="/">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/Farmer/Dashboard">Farmer Dashboard</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/Employee/Dashboard">Employee Dashboard</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/Account/Login">Login</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/Account/Register">Register</a>
-                        </li>
-                        <li class="nav-item">
                             <span class="nav-link text-light" id="userRoleDisplay"></span>
                         </li>
 
@@ -68,20 +56,28 @@
 
     <script>
         firebase.auth().onAuthStateChanged((user) => {
-          const nav = document.getElementById("navLinks");
-          if (user) {
-            nav.innerHTML = `
-              <li class="nav-item"><a class="nav-link" href="#" onclick="logoutUser()">Logout</a></li>
-            `;
-          }
-        });
+            const roleSpan = document.getElementById("userRoleDisplay");
 
-        function logoutUser() {
-          firebase.auth().signOut().then(() => {
-            window.location.href = "/Account/Login";
-          });
-        }
+            if (user) {
+                firebase.firestore().collection("users").doc(user.uid).get().then(doc => {
+                    if (doc.exists) {
+                        const role = doc.data().role;
+                        roleSpan.textContent = `Logged in as ${role}`;
+                    }
+                });
+
+                // Check if logout link already exists to avoid duplication
+                if (!document.getElementById("logoutLink")) {
+                    const logoutItem = document.createElement("li");
+                    logoutItem.className = "nav-item";
+                    logoutItem.innerHTML = `<a class="nav-link" id="logoutLink" href="#" onclick="logoutUser()">Logout</a>`;
+                    document.getElementById("navLinks").appendChild(logoutItem);
+                }
+            }
+        });
     </script>
+
+
 
 </body>
 </html>
