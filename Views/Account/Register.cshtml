@@ -1,0 +1,42 @@
+﻿@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 85vh;">
+    <div class="col-md-6 col-lg-4">
+        <h2 class="text-center mb-4">Register</h2>
+        <form id="registerForm">
+            <div class="mb-3">
+                <label for="regEmail" class="form-label">Email</label>
+                <input type="email" class="form-control" id="regEmail" required>
+            </div>
+            <div class="mb-3">
+                <label for="regPassword" class="form-label">Password</label>
+                <input type="password" class="form-control" id="regPassword" required>
+            </div>
+            <div class="mb-3">
+                <label for="regRole" class="form-label">Role</label>
+                <select id="regRole" class="form-control" required>
+                    <option value="farmer">Farmer</option>
+                    <option value="employee">Employee</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Register</button>
+            <div class="mt-3 text-center">
+                <span>Already have an account?</span>
+                <a href="/Account/Login">Login here</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById("registerForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const email = document.getElementById("regEmail").value;
+        const password = document.getElementById("regPassword").value;
+        const role = document.getElementById("regRole").value;
+        registerUser(email, password, role); // from auth.js
+    });
+</script>
+

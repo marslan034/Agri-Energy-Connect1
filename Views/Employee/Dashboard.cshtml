@@ -1,0 +1,70 @@
+﻿@{
+    ViewData["Title"] = "Employee Dashboard";
+}
+
+<h2>Welcome, Employee!</h2>
+
+<div class="mb-3">
+    <label for="filterType" class="form-label">Filter by Product Type</label>
+    <input type="text" class="form-control" id="filterType">
+</div>
+<div class="mb-3">
+    <label for="filterDate" class="form-label">Filter by Production Date</label>
+    <input type="date" class="form-control" id="filterDate">
+</div>
+<button class="btn btn-secondary mb-3" onclick="filterProducts()">Filter</button>
+
+<hr>
+
+<h4>All Farmer Products</h4>
+<ul id="productList" class="list-group"></ul>
+
+<script>
+    const db = firebase.firestore();
+
+    firebase.auth().onAuthStateChanged(function(user) {
+        if (user) {
+            loadAllProducts();
+        }
+    });
+
+    function loadAllProducts() {
+        db.collection("products").get().then((querySnapshot) => {
+            const list = document.getElementById("productList");
+            list.innerHTML = "";
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                const li = document.createElement("li");
+                li.className = "list-group-item";
+                li.textContent = `${data.name} (${data.type}) - ${data.date}`;
+                list.appendChild(li);
+            });
+        });
+    }
+
+    function filterProducts() {
+        const type = document.getElementById("filterType").value.toLowerCase();
+        const date = document.getElementById("filterDate").value;
+
+        let query = db.collection("products");
+
+        if (type) {
+            query = query.where("type", "==", type);
+        }
+
+        query.get().then((querySnapshot) => {
+            const list = document.getElementById("productList");
+            list.innerHTML = "";
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                if (!date || data.date === date) {
+                    const li = document.createElement("li");
+                    li.className = "list-group-item";
+                    li.textContent = `${data.name} (${data.type}) - ${data.date}`;
+                    list.appendChild(li);
+                }
+            });
+        });
+    }
+</script>
+
