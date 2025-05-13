@@ -2,10 +2,20 @@
     ViewData["Title"] = "Profile";
 }
 
-<div class="container mt-5">
-    <h2>Profile</h2>
-    <p id="userInfo">Loading user info...</p>
-    <button class="btn btn-danger mt-3" onclick="logoutUser()">Logout</button>
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card shadow p-4" style="max-width: 500px; width: 100%;">
+        <div class="card-body text-center">
+            <h2 class="card-title mb-4">👤 Profile</h2>
+
+            <div class="mb-3">
+                <p id="userInfo" class="lead text-muted">Loading user info...</p>
+            </div>
+
+            <button class="btn btn-outline-danger w-100 mt-3" onclick="logoutUser()">
+                Logout
+            </button>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
@@ -15,8 +25,8 @@
                 firebase.firestore().collection("users").doc(user.uid).get().then(doc => {
                     if (doc.exists) {
                         const data = doc.data();
-                        document.getElementById("userInfo").textContent =
-                            `Logged in as ${data.email} (${data.role})`;
+                        document.getElementById("userInfo").innerHTML =
+                            `<strong>Email:</strong> ${data.email}<br><strong>Role:</strong> ${data.role}`;
                     } else {
                         document.getElementById("userInfo").textContent = "❌ No profile data found.";
                     }
