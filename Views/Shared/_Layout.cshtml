@@ -12,7 +12,8 @@
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container">
-                <a class="navbar-brand mx-auto" href="/">Agri-Energy Connect</a>
+                <a class="navbar-brand mx-auto" href="#" onclick="goHome()">Agri-Energy Connect</a>
+
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -20,7 +21,7 @@
                 <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
                     <ul class="navbar-nav text-center" id="navLinks">
                         <li class="nav-item">
-                            <a class="nav-link" href="/">Home</a>
+                            <a class="nav-link" href="/Profile/Index">Profile</a>
                         </li>
                         <li class="nav-item">
                             <span class="nav-link text-light" id="userRoleDisplay"></span>
@@ -46,15 +47,32 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
     <!-- Firebase Scripts -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     <script src="~/firebase/firebase-config.js"></script>
     <script src="~/js/auth.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
 
     <script>
+        function goHome() {
+            const user = firebase.auth().currentUser;
+            if (user) {
+                window.location.href = "/Home/Index";
+            } else {
+                window.location.href = "/Account/Login";
+            }
+        }
+
+        function logoutUser() {
+            firebase.auth().signOut().then(() => {
+                window.location.href = "/Account/Login";
+            }).catch((error) => {
+                alert("Logout failed: " + error.message);
+            });
+        }
+
         firebase.auth().onAuthStateChanged((user) => {
             const roleSpan = document.getElementById("userRoleDisplay");
 
@@ -76,8 +94,6 @@
             }
         });
     </script>
-
-
 
 </body>
 </html>

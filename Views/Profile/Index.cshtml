@@ -1,0 +1,29 @@
+﻿@{
+    ViewData["Title"] = "Profile";
+}
+
+<div class="container mt-5">
+    <h2>Profile</h2>
+    <p id="userInfo">Loading user info...</p>
+    <button class="btn btn-danger mt-3" onclick="logoutUser()">Logout</button>
+</div>
+
+@section Scripts {
+    <script>
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                firebase.firestore().collection("users").doc(user.uid).get().then(doc => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        document.getElementById("userInfo").textContent =
+                            `Logged in as ${data.email} (${data.role})`;
+                    } else {
+                        document.getElementById("userInfo").textContent = "❌ No profile data found.";
+                    }
+                });
+            } else {
+                window.location.href = "/Account/Login";
+            }
+        });
+    </script>
+}
