@@ -2,78 +2,151 @@
     ViewData["Title"] = "Employee Dashboard";
 }
 
-<script>
-    const db = firebase.firestore();
+<!-- Main dashboard content (hidden by default, shown only to employees) -->
+<div id="employeeContent" style="display: none;">
+    <div class="container mt-4">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-primary">👨‍💼 Employee Dashboard</h2>
+            <p class="text-muted">View and filter farmer-submitted products</p>
+        </div>
 
-    firebase.auth().onAuthStateChanged((user) => {
-        if (!user) {
-            window.location.href = "/Account/Login";
-            return;
-        }
+        <!-- Button to navigate to add-new-farmer page -->
+        <a href="/Farmer/Add" class="btn btn-outline-primary mb-4">➕ Add New Farmer</a>
 
-        firebase.firestore().collection("users").doc(user.uid).get().then(doc => {
-            if (!doc.exists || doc.data().role !== "employee") {
-                alert("Access denied. Only employees can access this page.");
-                window.location.href = "/";
-            } else {
-                // ✅ Only employee gets here
-                loadAllProducts();
+        <!-- Filtering options -->
+        <div class="card shadow-sm p-4 mb-4">
+            <h5 class="mb-3">🔍 Filter Products</h5>
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="filterType" class="form-label">Product Type</label>
+                    <select id="filterType" class="form-select">
+                        <option value="">-- All Types --</option>
+                        <option value="Wheat">Wheat</option>
+                        <option value="Corn">Corn</option>
+                        <option value="Barley">Barley</option>
+                        <option value="Rice">Rice</option>
+                        <option value="Vegetables">Vegetables</option>
+                        <option value="Fruits">Fruits</option>
+                        <option value="Livestock">Livestock</option>
+                        <option value="Dairy">Dairy</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="startDate" class="form-label">Start Date</label>
+                    <input type="date" class="form-control" id="startDate">
+                </div>
+                <div class="col-md-4">
+                    <label for="endDate" class="form-label">End Date</label>
+                    <input type="date" class="form-control" id="endDate">
+                </div>
+                <div class="col-12 d-grid mt-3">
+                    <button class="btn btn-outline-secondary" onclick="filterProducts()">Apply Filters</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Displaying filtered or all products -->
+        <div class="card shadow-sm p-4">
+            <h5 class="mb-3">📦 All Farmer Products</h5>
+            <ul id="productList" class="list-group"></ul>
+        </div>
+    </div>
+</div>
+
+<!-- Block access if not an employee -->
+<div id="accessDenied" style="display: none;" class="text-center mt-5">
+    <h3 class="text-danger">🚫 It appears you're on the wrong page.</h3>
+    <p class="text-muted">This section is for employees only.</p>
+    <div class="d-flex justify-content-center gap-3 flex-wrap mt-4">
+        <a href="/Home/Index" class="btn btn-outline-primary">🏠 Home</a>
+        <a href="/Farmer/Dashboard" class="btn btn-outline-success">🌾 Farmer Dashboard</a>
+        <a href="/Profile/Index" class="btn btn-outline-secondary">👤 Profile</a>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const db = firebase.firestore();
+
+        // Ensure only employees can access this page
+        firebase.auth().onAuthStateChanged((user) => {
+            if (!user) {
+                window.location.href = "/Account/Login";
+                return;
             }
-        });
-    });
 
-    function loadAllProducts() {
-        db.collection("products").get().then((querySnapshot) => {
-            const list = document.getElementById("productList");
-            list.innerHTML = "";
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                const li = document.createElement("li");
-                li.className = "list-group-item";
-                li.textContent = `${data.name} (${data.type}) - ${data.date}`;
-                list.appendChild(li);
-            });
-        });
-    }
-
-    function filterProducts() {
-        const type = document.getElementById("filterType").value.toLowerCase();
-        const date = document.getElementById("filterDate").value;
-
-        let query = db.collection("products");
-
-        if (type) query = query.where("type", "==", type);
-
-        query.get().then((querySnapshot) => {
-            const list = document.getElementById("productList");
-            list.innerHTML = "";
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                if (!date || data.date === date) {
-                    const li = document.createElement("li");
-                    li.className = "list-group-item";
-                    li.textContent = `${data.name} (${data.type}) - ${data.date}`;
-                    list.appendChild(li);
+            firebase.firestore().collection("users").doc(user.uid).get().then(doc => {
+                if (!doc.exists || doc.data().role !== "employee") {
+                    document.getElementById("accessDenied").style.display = "block";
+                } else {
+                    document.getElementById("employeeContent").style.display = "block";
+                    loadAllProducts();
                 }
             });
         });
-    }
-</script>
 
+        // Loads all products from Firestore without filtering
+        function loadAllProducts() {
+            db.collection("products").get().then((querySnapshot) => {
+                const list = document.getElementById("productList");
+                list.innerHTML = "";
 
-<h2>Welcome, Employee!</h2>
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const li = document.createElement("li");
+                    li.className = "list-group-item";
+                    li.innerHTML = `
+                        <strong>${data.name}</strong> (${data.type})<br>
+                        <small class="text-muted">Date: ${data.date} | Farmer: ${data.farmerEmail ?? "Unknown"}</small>
+                    `;
+                    list.appendChild(li);
+                });
+            });
+        }
 
-<div class="mb-3">
-    <label for="filterType" class="form-label">Filter by Product Type</label>
-    <input type="text" class="form-control" id="filterType">
-</div>
-<div class="mb-3">
-    <label for="filterDate" class="form-label">Filter by Production Date</label>
-    <input type="date" class="form-control" id="filterDate">
-</div>
-<button class="btn btn-secondary mb-3" onclick="filterProducts()">Filter</button>
+        // Applies filters by type and date range
+        function filterProducts() {
+            const type = document.getElementById("filterType").value;
+            const startDate = document.getElementById("startDate").value;
+            const endDate = document.getElementById("endDate").value;
 
-<hr>
+            let query = db.collection("products");
 
-<h4>All Farmer Products</h4>
-<ul id="productList" class="list-group"></ul>
+            // Only apply 'type' filter in Firestore query
+            if (type) {
+                query = query.where("type", "==", type);
+            }
+
+            // Get matching documents and apply date filtering client-side
+            query.get().then((querySnapshot) => {
+                const list = document.getElementById("productList");
+                list.innerHTML = "";
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+
+                    // Date filtering logic: matches if within start and end
+                    const matchesDate =
+                        (!startDate || data.date >= startDate) &&
+                        (!endDate || data.date <= endDate);
+
+                    if (matchesDate) {
+                        const li = document.createElement("li");
+                        li.className = "list-group-item";
+                        li.innerHTML = `
+                            <strong>${data.name}</strong> (${data.type})<br>
+                            <small class="text-muted">Date: ${data.date} | Farmer: ${data.farmerEmail ?? "Unknown"}</small>
+                        `;
+                        list.appendChild(li);
+                    }
+                });
+
+                // If nothing found
+                if (list.innerHTML === "") {
+                    list.innerHTML = `<li class="list-group-item text-muted text-center">No products found.</li>`;
+                }
+            });
+        }
+    </script>
+}

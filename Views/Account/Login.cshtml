@@ -2,19 +2,27 @@
     ViewData["Title"] = "Login";
 }
 
+<!-- Centered login form using Bootstrap flex utilities -->
 <div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
     <div class="col-md-6 col-lg-4">
         <h2 class="text-center mb-4">Login</h2>
+
+        <!-- Login form (email + password) -->
         <form id="loginForm">
             <div class="mb-3">
                 <label for="loginEmail" class="form-label">Email</label>
                 <input type="email" class="form-control" id="loginEmail" required>
             </div>
+
             <div class="mb-3">
                 <label for="loginPassword" class="form-label">Password</label>
                 <input type="password" class="form-control" id="loginPassword" required>
             </div>
+
+            <!-- Submit button -->
             <button type="submit" class="btn btn-success w-100">Login</button>
+
+            <!-- Link to registration page -->
             <div class="mt-3 text-center">
                 <span>Don't have an account?</span>
                 <a href="/Account/Register">Register here</a>
@@ -23,12 +31,16 @@
     </div>
 </div>
 
-
 <script>
+    // Handle form submission
     document.getElementById("loginForm").addEventListener("submit", function (e) {
-        e.preventDefault();
+        e.preventDefault(); // Prevent default form refresh
+
+        // Collect input values
         const email = document.getElementById("loginEmail").value;
         const password = document.getElementById("loginPassword").value;
-        loginUser(email, password); // from auth.js
+
+        // Call login function (defined in auth.js) to authenticate with Firebase
+        loginUser(email, password);
     });
 </script>

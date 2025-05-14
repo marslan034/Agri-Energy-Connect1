@@ -1,0 +1,68 @@
+﻿@{
+    ViewData["Title"] = "Add New Farmer";
+}
+
+<!-- Page container centered using Bootstrap -->
+<div class="container mt-5">
+    <div class="card shadow p-4" style="max-width: 600px; margin: auto;">
+        <h3 class="mb-3 text-center text-success">➕ Register New Farmer</h3>
+
+        <!-- Form to register a new farmer account -->
+        <form id="newFarmerForm">
+            <!-- Email input field -->
+            <div class="mb-3">
+                <label for="farmerEmail" class="form-label">Email</label>
+                <input type="email" class="form-control" id="farmerEmail" required>
+            </div>
+
+            <!-- Temporary password input -->
+            <div class="mb-3">
+                <label for="farmerPassword" class="form-label">Temporary Password</label>
+                <input type="password" class="form-control" id="farmerPassword" required>
+            </div>
+
+            <!-- Submit button -->
+            <button type="submit" class="btn btn-success w-100">Create Farmer Account</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Handle form submission
+        document.getElementById("newFarmerForm").addEventListener("submit", function (e) {
+            e.preventDefault(); // Prevent form reload
+
+            // Get values from form inputs
+            const email = document.getElementById("farmerEmail").value.trim();
+            const password = document.getElementById("farmerPassword").value;
+
+            /**
+             * Self WARNING:
+             * In a production environment, user creation like this should be done with the Firebase Admin SDK
+             * on a secure backend server, not on the client-side. This is acceptable here only for demonstration sake.
+             */
+
+            // Register new user with Firebase Authentication
+            firebase.auth().createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    const newUser = userCredential.user;
+
+                    // Save user role and email to Firestore
+                    return firebase.firestore().collection("users").doc(newUser.uid).set({
+                        email: email,
+                        role: "farmer"
+                    });
+                })
+                .then(() => {
+                    alert("✅ Farmer account created!");
+                    // Redirect back to the Employee Dashboard
+                    window.location.href = "/Employee/Dashboard";
+                })
+                .catch((error) => {
+                    // Handle and display any errors
+                    alert("❌ Error: " + error.message);
+                });
+        });
+    </script>
+}

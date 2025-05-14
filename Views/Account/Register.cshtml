@@ -2,18 +2,26 @@
     ViewData["Title"] = "Register";
 }
 
+<!-- Centered registration form using Bootstrap grid -->
 <div class="container d-flex justify-content-center align-items-center" style="min-height: 85vh;">
     <div class="col-md-6 col-lg-4">
         <h2 class="text-center mb-4">Register</h2>
+
+        <!-- Registration form with email, password, and role -->
         <form id="registerForm">
+            <!-- Email input -->
             <div class="mb-3">
                 <label for="regEmail" class="form-label">Email</label>
                 <input type="email" class="form-control" id="regEmail" required>
             </div>
+
+            <!-- Password input -->
             <div class="mb-3">
                 <label for="regPassword" class="form-label">Password</label>
                 <input type="password" class="form-control" id="regPassword" required>
             </div>
+
+            <!-- Role selection dropdown -->
             <div class="mb-3">
                 <label for="regRole" class="form-label">Role</label>
                 <select id="regRole" class="form-control" required>
@@ -21,7 +29,11 @@
                     <option value="employee">Employee</option>
                 </select>
             </div>
+
+            <!-- Register button -->
             <button type="submit" class="btn btn-primary w-100">Register</button>
+
+            <!-- Link to login page -->
             <div class="mt-3 text-center">
                 <span>Already have an account?</span>
                 <a href="/Account/Login">Login here</a>
@@ -31,12 +43,16 @@
 </div>
 
 <script>
+    // Handle form submission
     document.getElementById("registerForm").addEventListener("submit", function (e) {
-        e.preventDefault();
+        e.preventDefault(); // Prevent page reload
+
+        // Collect form input values
         const email = document.getElementById("regEmail").value;
         const password = document.getElementById("regPassword").value;
         const role = document.getElementById("regRole").value;
-        registerUser(email, password, role); // from auth.js
+
+        // Call Firebase registration function (from auth.js)
+        registerUser(email, password, role);
     });
 </script>
-

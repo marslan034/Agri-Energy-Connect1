@@ -4,12 +4,12 @@ namespace AgriEnergyConnectWebApp.Controllers
 {
     public class AccountController : Controller
     {
-        public IActionResult Login()
+        public IActionResult Login() // login page
         {
             return View();
         }
 
-        public IActionResult Register()
+        public IActionResult Register() // register page
         {
             return View();
         }

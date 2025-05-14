@@ -2,67 +2,119 @@
     ViewData["Title"] = "Farmer Dashboard";
 }
 
-<h2>Welcome, Farmer!</h2>
-
-<form id="productForm">
-    <div class="mb-3">
-        <label for="productName" class="form-label">Product Name</label>
-        <input type="text" class="form-control" id="productName" required>
+<div class="container mt-4">
+    <!-- Dashboard Header -->
+    <div class="text-center mb-4">
+        <h2 class="fw-bold text-success">🌾 Farmer Dashboard</h2>
+        <p class="text-muted">Add and view your agricultural products</p>
     </div>
-    <div class="mb-3">
-        <label for="productType" class="form-label">Product Type</label>
-        <input type="text" class="form-control" id="productType" required>
+
+    <!-- Product Entry Form -->
+    <div class="card shadow-sm p-4 mb-4">
+        <h5 class="mb-3">➕ Add New Product</h5>
+        <form id="productForm">
+            <div class="mb-3">
+                <label for="productName" class="form-label">Product Name</label>
+                <input type="text" class="form-control" id="productName" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="productType" class="form-label">Product Type</label>
+                <select id="productType" class="form-select" required>
+                    <option value="">-- Select a type --</option>
+                    <option value="Wheat">Wheat</option>
+                    <option value="Corn">Corn</option>
+                    <option value="Barley">Barley</option>
+                    <option value="Rice">Rice</option>
+                    <option value="Vegetables">Vegetables</option>
+                    <option value="Fruits">Fruits</option>
+                    <option value="Livestock">Livestock</option>
+                    <option value="Dairy">Dairy</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="productionDate" class="form-label">Production Date</label>
+                <input type="date" class="form-control" id="productionDate" required>
+            </div>
+
+            <div class="d-grid">
+                <button type="submit" class="btn btn-success">Add Product</button>
+            </div>
+        </form>
     </div>
-    <div class="mb-3">
-        <label for="productionDate" class="form-label">Production Date</label>
-        <input type="date" class="form-control" id="productionDate" required>
+
+    <!-- Display Farmer's Product List -->
+    <div class="card shadow-sm p-4">
+        <h5 class="mb-3">📦 Your Products</h5>
+        <ul id="productList" class="list-group"></ul>
     </div>
-    <button type="submit" class="btn btn-primary">Add Product</button>
-</form>
+</div>
 
-<hr>
+@section Scripts {
+    <script>
+        const db = firebase.firestore(); // Initialize Firestore
 
-<h4>Your Products</h4>
-<ul id="productList" class="list-group"></ul>
+        // Listen for auth state changes to ensure only logged-in farmers interact
+        firebase.auth().onAuthStateChanged(function (user) {
+            if (user) {
+                // Load existing products when the page loads
+                loadProducts(user.uid);
 
-<script>
-    const db = firebase.firestore();
-    const user = firebase.auth().currentUser;
+                // Form submission handler
+                document.getElementById("productForm").addEventListener("submit", function (e) {
+                    e.preventDefault(); // Prevent default form submission
 
-    firebase.auth().onAuthStateChanged(function(user) {
-        if (user) {
-            loadProducts(user.uid);
+                    // Get form values
+                    const name = document.getElementById("productName").value.trim();
+                    const type = document.getElementById("productType").value;
+                    const date = document.getElementById("productionDate").value;
 
-            document.getElementById("productForm").addEventListener("submit", function (e) {
-                e.preventDefault();
-                const name = document.getElementById("productName").value;
-                const type = document.getElementById("productType").value;
-                const date = document.getElementById("productionDate").value;
+                    // Basic validation
+                    if (!name || !type || !date) {
+                        alert("Please fill in all fields.");
+                        return;
+                    }
 
-                db.collection("products").add({
-                    name: name,
-                    type: type,
-                    date: date,
-                    farmerId: user.uid
-                }).then(() => {
-                    alert("✅ Product added");
-                    loadProducts(user.uid);
+                    // Add product to Firestore with user ID and email
+                    db.collection("products").add({
+                        name: name,
+                        type: type,
+                        date: date,
+                        farmerId: user.uid,
+                        farmerEmail: user.email
+                    }).then(() => {
+                        alert("✅ Product added successfully!");
+                        document.getElementById("productForm").reset(); // Clear form
+                        loadProducts(user.uid); // Refresh product list
+                    });
+                });
+            } else {
+                // Redirect unauthenticated users to login
+                window.location.href = "/Account/Login";
+            }
+        });
+
+        // Load all products belonging to the currently logged-in farmer
+        function loadProducts(uid) {
+            db.collection("products")
+              .where("farmerId", "==", uid)
+              .get()
+              .then((querySnapshot) => {
+                const list = document.getElementById("productList");
+                list.innerHTML = "";
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const li = document.createElement("li");
+                    li.className = "list-group-item";
+                    li.innerHTML = `
+                        <strong>${data.name}</strong> (${data.type})<br>
+                        <small class="text-muted">${data.date}</small>
+                    `;
+                    list.appendChild(li);
                 });
             });
         }
-    });
-
-    function loadProducts(uid) {
-        db.collection("products").where("farmerId", "==", uid).get().then((querySnapshot) => {
-            const list = document.getElementById("productList");
-            list.innerHTML = "";
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                const li = document.createElement("li");
-                li.className = "list-group-item";
-                li.textContent = `${data.name} (${data.type}) - ${data.date}`;
-                list.appendChild(li);
-            });
-        });
-    }
-</script>
+    </script>
+}

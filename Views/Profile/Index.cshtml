@@ -2,15 +2,18 @@
     ViewData["Title"] = "Profile";
 }
 
+<!-- Centered profile card container -->
 <div class="container mt-5 d-flex justify-content-center">
     <div class="card shadow p-4" style="max-width: 500px; width: 100%;">
         <div class="card-body text-center">
             <h2 class="card-title mb-4">👤 Profile</h2>
 
+            <!-- Placeholder for user info (email + role) -->
             <div class="mb-3">
                 <p id="userInfo" class="lead text-muted">Loading user info...</p>
             </div>
 
+            <!-- Logout button -->
             <button class="btn btn-outline-danger w-100 mt-3" onclick="logoutUser()">
                 Logout
             </button>
@@ -20,18 +23,24 @@
 
 @section Scripts {
     <script>
+        // Listen for changes in the user's authentication state
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
+                // If user is logged in, fetch their profile info from Firestore
                 firebase.firestore().collection("users").doc(user.uid).get().then(doc => {
                     if (doc.exists) {
                         const data = doc.data();
+
+                        // Display the user's email and role in the profile section
                         document.getElementById("userInfo").innerHTML =
                             `<strong>Email:</strong> ${data.email}<br><strong>Role:</strong> ${data.role}`;
                     } else {
+                        // If the user document doesn't exist in Firestore
                         document.getElementById("userInfo").textContent = "❌ No profile data found.";
                     }
                 });
             } else {
+                // If not logged in, redirect to login page
                 window.location.href = "/Account/Login";
             }
         });
